@@ -1,0 +1,89 @@
+
+        public DataTable selectallBalancesheet()
+        {
+            StringBuilder sb = new StringBuilder(); string AssetAccount = "-", LiabilityAccount = "-", CapitalAccount = "-";
+            string AC = this.AccountCategoryID > 0 ? this.AccountCategoryID.ToString() : "DEFAULT";
+            string Tax = this.TaxMode == "TAXABLE" ? "1" : this.TaxMode == "NONTAXABLE" ? "0" : "null";
+
+            DataTable dt1 = GStatic.ReturnDT(@"select a.GLCode as  AssetAccount,b.GLCode as LiabilityAccount,c.GLCode as CapitalAccount from gen_SystemConfiguration join GLChartOFAccount a on gen_SystemConfiguration.AssetAccount = a.GLCAID
+            join GLChartOFAccount b on gen_SystemConfiguration.LiabilityAccount = b.GLCAID join GLChartOFAccount c 
+            on gen_SystemConfiguration.CapitalAccount = c.GLCAID where gen_SystemConfiguration.CompanyID = " + this.CompanyID);
+
+            if (dt1.Rows.Count > 0)
+            {
+                AssetAccount = dt1.Rows[0]["AssetAccount"].ToString().Substring(0, 1);
+                LiabilityAccount = dt1.Rows[0]["LiabilityAccount"].ToString().Substring(0, 1);
+                CapitalAccount = dt1.Rows[0]["CapitalAccount"].ToString().Substring(0, 1);
+            }
+
+
+            string where = "";
+
+            if (this.WithoutFiscal)
+            {
+                where = " where  ISNULL(Glvmain.LogSourceID,0)=0 and (GLvMAIN.Comp_Id = " + this.CompanyID + ")";
+            }
+            else
+            {
+                where = " where   ISNULL(Glvmain.LogSourceID,0)=0 and (GLvMAIN.FiscalID = " + this.FiscalID + ") AND(GLvMAIN.Comp_Id = " + this.CompanyID + ")";
+            }
+            where += " and (GLvMAIN.vDate BETWEEN  '" + this.DateFrom.ToString("yyyy-MM-dd") + "' AND '" + this.DateTo.ToString("yyyy-MM-dd") + "')";
+            if (this.AccountCategoryID > 0)
+            {
+                where += " and AccountCategoryID = " + this.AccountCategoryID;
+            }
+            if (!this.WithClosing)
+            {
+                where += " and GLvMAIN.vID not in (select isnull(AccountVoucherID,0) from GLFiscalYear where Fiscalid = " + this.FiscalID + ")";
+            }
+
+            if (this.TaxMode != "OVERALL")
+            {
+                where += " and GLvMAIN.IsTaxable = "; where += this.TaxMode == "TAXABLE" ? 1 : 0;
+            }
+
+            sb.Append(@"
+	select GlAccountID,ISNULL(sum(GLvDetail.dr-GLvDetail.cr),0)  AS OpeningBalance INTO #TempOpeningBalances
+		from GLvDetail
+		join GLvMAIN on GLvMAIN.vID = GLvDetail.vID
+		where ISNULl(Glvmain.LogSourceID,0)=0 AND Comp_Id = "+this.CompanyID+@" and vDate <'" + this.DateFrom.ToString("dd-MMM-yyyy") + @"'
+		and IsTaxable = " + Tax + @"
+			GROUP BY GlAccountID;
+");
+
+            sb.Append(@"with cte (Level,sort,GLCAID, GLCode,  GLTitle ,  isParent, GLNature,  GLLevel, OpeningBalance,AccountType)
+            as(
+            SELECT         0 as Levels,sort=cast(GLCAID as varchar(max))
+            ,GLCAID, GLCode,  GLTitle ,  isParent, GLNature,  GLLevel, dbo.OpeningBalance('" + this.DateFrom.ToString("dd-MMM-yyyy") + @"', GLChartOFAccount.Companyid, GLCAID," + AC + "," + Tax + @") AS OpeningBalance,
+            case when a.AssetAccount > 0 then 'ASSET' when b.LiabilityAccount > 0 then 'LIABILITY'
+			else 'CAPITAL' end as AccountType
+            FROM            GLChartOFAccount left join gen_SystemConfiguration a on a.AssetAccount = GLChartOFAccount.GLCAID
+			left join gen_SystemConfiguration b on b.LiabilityAccount = GLChartOFAccount.GLCAID
+            where isParent = 0 and  GLChartOFAccount.Companyid = " + this.CompanyID + @"
+            and (GLCode like N'" + AssetAccount + @"%' or GLCode like N'" + LiabilityAccount + @"%' or GLCode like N'" + CapitalAccount + @"%')
+            union all
+            SELECT       Level + 1 as Lev,sort=b.sort+cast(a.GLCAID as varchar(30))
+            ,a.GLCAID, a.GLCode,  a.GLTitle ,  a.isParent, a.GLNature,  a.GLLevel, dbo.OpeningBalance('" + this.DateFrom.ToString("dd-MMM-yyyy") + @"', Companyid, a.GLCAID," + AC + "," + Tax + @") AS OpeningBalance,
+            b.AccountType
+            FROM            GLChartOFAccount a join cte b  on a.isParent = b.GLCAID
+            where  Companyid = " + this.CompanyID + @"
+            and (a.GLCode like N'" + AssetAccount + @"%' or a.GLCode like N'" + LiabilityAccount + @"%' or a.GLCode like N'" + CapitalAccount + @"%')
+            )
+            select  
+            --replicate(' ',Level*3)+ 
+            GLTitle as GLTitle,
+            Level,sort,GLCAID, GLCode,  GLTitle ,  isParent, GLNature,  GLLevel, OpeningBalance,ISNULL(Dr,0) as Dr, ISNULL( Cr,0) as Cr,
+            AccountType
+            from cte  
+
+            left join (SELECT        GLvDetail.GlAccountID, SUM(GLvDetail.dr) AS Dr, SUM(GLvDetail.cr) AS Cr
+            FROM            GLvMAIN INNER JOIN
+                                     GLvDetail ON GLvMAIN.vID = GLvDetail.vID
+            " + where + @" GROUP BY GLvDetail.GlAccountID)Accounts
+            on Accounts.GlAccountID = cte.GLCAID where 0 = 0 ");
+
+            sb.Append("order by CONVERT(numeric(20,0) ,GLCode), sort");
+            string temp = sb.ToString();
+            DataTable dt = GStatic.ReturnDT(sb.ToString());
+            return dt;
+        }

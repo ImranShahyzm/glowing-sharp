@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <configSections>
+    <!-- For more information on Entity Framework configuration, visit http://go.microsoft.com/fwlink/?LinkID=237468 -->
+    <section name="entityFramework" type="System.Data.Entity.Internal.ConfigFile.EntityFrameworkSection, EntityFramework, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" requirePermission="false" />
+  </configSections>
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.6.1" />
+  </startup>
+  <connectionStrings>
+    <!--<add name="ConnectionStringName" connectionString="Data Source=103.86.135.182,1433;Initial Catalog=FoodMama;user id=sa;password=@Mispldesk" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=103.86.135.182,1433;Initial Catalog=FoodMama;User ID=sa;Password=@Mispldesk" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=KHAAKI-PC;Initial Catalog=KhaakiDb;user id=sa;password=@Mispldesk" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=Khaaki-PC;Initial Catalog=KhaakiDb;User ID=sa;Password=@Mispldesk" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=KHAAKI-SERVER\SA;Initial Catalog=KhaakiDb;user id=sa;password=@Mispldesk" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=KHAAKI-SERVER\SA;Initial Catalog=KhaakiDb;User ID=sa;Password=@Mispldesk" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=KhaakiDb;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=KhaakiDb;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=RAWALPINDIPOS;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+    <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=RAWALPINDIPOS;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+    
+    
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=ChoudrysweetsDB;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=ChoudrysweetsDB;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-5F2E56I;Initial Catalog=AbtobadPos;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-5F2E56I;Initial Catalog=AbtobadPos;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=AbtobadPos;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=AbtobadPos;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=DHALahorePos;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=DHALahorePos;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=ChistiyanPos;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=ChistiyanPos;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=KHAAKI-SAHIWAL;Initial Catalog=SahiwalPos;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=KHAAKI-SAHIWAL;Initial Catalog=SahiwalPos;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-PRJGKTQ\SQLEXPRESS;Initial Catalog=DHALahorePos;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-PRJGKTQ\SQLEXPRESS;Initial Catalog=DHALahorePos;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-D1KMKBD;Initial Catalog=ChistiyanPos;user id=sa;password=retailwiz" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-D1KMKBD;Initial Catalog=ChistiyanPos;User ID=sa;Password=retailwiz" providerName="System.Data.SqlClient" />-->
+   
+    
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=ChoudrysweetsDB;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+    <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-Q54D9J1;Initial Catalog=ChoudrysweetsDB;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+
+
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-S50RJ5S\SQLEXPRESS;Initial Catalog=VAHCANT_DB;user id=sa;password=deskpro@123" providerName="System.Data.SqlClient" />
+    <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-S50RJ5S\SQLEXPRESS;Initial Catalog=VAHCANT_DB;User ID=sa;Password=deskpro@123" providerName="System.Data.SqlClient" />-->
+
+
+    
+
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-0S94E0B\SQLEXPRESS;Initial Catalog=RAWALPINDIPOS;user id=sa;password=@deskpro" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-0S94E0B\SQLEXPRESS;Initial Catalog=RAWALPINDIPOS;User ID=sa;Password=@deskpro" providerName="System.Data.SqlClient" />-->
+   
+    
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-F6F7NIF;Initial Catalog=CresentElectric;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-F6F7NIF;Initial Catalog=CresentElectric;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnectionStringName" connectionString="Data Source=DESKTOP-FVUM9ME;Initial Catalog=FoodMama;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+        <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=DESKTOP-FVUM9ME;Initial Catalog=FoodMama;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+    
+    <add name="ConnectionStringName" connectionString="Data Source=192.168.10.240,1433;Initial Catalog=ChoudrysweetsDB;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+    <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=192.168.10.240,1433;Initial Catalog=ChoudrysweetsDB;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />
+   
+    <!--<add name="ConnectionStringName" connectionString="Data Source=192.168.10.240,1433;Initial Catalog=ChTestDb;user id=sa;password=deskpro" providerName="System.Data.SqlClient" />
+      <add name="POS.Properties.Settings.SAGERPConnectionString" connectionString="Data Source=192.168.10.240,1433;Initial Catalog=ChTestDb;User ID=sa;Password=deskpro" providerName="System.Data.SqlClient" />-->
+  
+  
+  </connectionStrings>
+  <runtime>
+    <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+      <dependentAssembly>
+        <assemblyIdentity name="CrystalDecisions.Shared" publicKeyToken="692fbea5521e1304" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-13.0.4000.0" newVersion="13.0.4000.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="CrystalDecisions.ReportSource" publicKeyToken="692fbea5521e1304" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-13.0.4000.0" newVersion="13.0.4000.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Microsoft.ReportViewer.Common" publicKeyToken="89845dcd8080cc91" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-14.0.0.0" newVersion="14.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="CrystalDecisions.Web" publicKeyToken="692fbea5521e1304" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-13.0.2000.0" newVersion="13.0.2000.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="CrystalDecisions.CrystalReports.Design" publicKeyToken="692fbea5521e1304" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-13.0.4000.0" newVersion="13.0.4000.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="CrystalDecisions.CrystalReports.Engine" publicKeyToken="692fbea5521e1304" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-13.0.4000.0" newVersion="13.0.4000.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="CrystalDecisions.Windows.Forms" publicKeyToken="692fbea5521e1304" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-13.0.4000.0" newVersion="13.0.4000.0" />
+      </dependentAssembly>
+    </assemblyBinding>
+  </runtime>
+  <entityFramework>
+    <defaultConnectionFactory type="System.Data.Entity.Infrastructure.LocalDbConnectionFactory, EntityFramework">
+      <parameters>
+        <parameter value="v13.0" />
+      </parameters>
+    </defaultConnectionFactory>
+  </entityFramework>
+</configuration>
