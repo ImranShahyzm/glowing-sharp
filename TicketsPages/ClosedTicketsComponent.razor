@@ -1,0 +1,132 @@
+﻿@page "/ClosedTickets"
+@using Microsoft.AspNetCore.SignalR;
+@using Microsoft.AspNetCore.SignalR.Client;
+@using Radzen;
+@using Radzen.Blazor;
+@using SagErpBlazor.DataTransferClasses;
+@using SagErpBlazor.DbClasses;
+@using SagErpBlazor.ModelServices;
+@using SagErpBlazor.Models;
+@using SagErpBlazor.SignalRHub;
+@using SagErpBlazor.StaticEnums;
+@inject StsTicketsRegisterService _StsTicketsRegisterService;
+@inject HubConnection HubConnection
+@inject IJSRuntime JSRuntime;
+<RadzenDataGrid @ref="_VwTicketsStatusInfoGrid" AllowFiltering="true" AllowPaging="true" PageSize="10" AllowSorting="true"
+                Data="@_VwTicketsStatusInfoClosedList" TItem="VwTicketsStatusInfo" RowRender="@CustomRowRender" RowDoubleClick="@SelectRowData" Density="Density.Compact">
+
+    <Columns>
+        <RadzenDataGridColumn Width="200px" TItem="VwTicketsStatusInfo" Property="TicketId" Title="Ticket #">
+            <FooterTemplate>
+                Total Tickets: <b>@_VwTicketsStatusInfoClosedList.Count()</b>
+            </FooterTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Width="200px" TItem="VwTicketsStatusInfo" Property="TicketName" Title="Ticket Title" />
+        <RadzenDataGridColumn TItem="VwTicketsStatusInfo" Property="MainProjectName" Title="ProjectName">
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="VwTicketsStatusInfo" Property="TypeName" Title="Ticket Type">
+            <Template Context="VwTicketsStatusInfo">
+
+                <span class="ticket-badge @VwTicketsStatusInfo.TypeIcon">@VwTicketsStatusInfo.TypeName</span>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="VwTicketsStatusInfo" Property="RegisteredDate" Title="Register Date">
+            <Template Context="VwTicketsStatusInfo">
+                @VwTicketsStatusInfo.RegisteredDate.ToString("dd-MMM-yyyy")
+            </Template>
+
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="VwTicketsStatusInfo" Property="StatusName" Title="Ticket Status">
+            <Template Context="VwTicketsStatusInfo">
+                <span class="ticket-Status" style="background-color:@VwTicketsStatusInfo.StatusColor">@VwTicketsStatusInfo.StatusName</span>
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+
+
+@code {
+    ParentTicketsData parentTicketsData = new ParentTicketsData
+        {
+            TicketsRegister = new StsTicketsRegister(),
+            TicketsRegisterAttachment = new List<StsTicketsRegisterAttachment>(),
+            StatusColor = "##007bff",
+            StatusName = ""
+        };
+    [Parameter]
+    public EventCallback<ParentTicketsData> ParentDataChanged { get; set; }
+
+    RadzenDataGrid<VwTicketsStatusInfo> _VwTicketsStatusInfoGrid;
+    StsTicketsRegister _StsProjectNew1 = new StsTicketsRegister();
+
+    [CascadingParameter]
+    private Task<AuthenticationState> _AuthenticationStateTask { get; set; }
+    ClaimsPrincipal _User;
+    [Parameter]
+    public List<VwTicketsStatusInfo> _VwTicketsStatusInfoClosedList { get; set; }
+
+    public List<VwTicketsStatusInfo> _VwTicketsStatusInfoFilterData = new List<VwTicketsStatusInfo>();
+
+    private CustomErrorClass _CustomErrorClass = new CustomErrorClass();
+    private bool IsProjectName = false;
+    private string searchValue { get; set; }
+
+    private Timer highlightTimer;
+    private int CustomerID { get; set; }
+
+    private int CompanyID { get; set; }
+    private bool IsTaskRunning = false;
+    protected override async Task OnInitializedAsync()
+    {
+        _User = (await _AuthenticationStateTask).User;
+
+        if (_User.Identity.IsAuthenticated)
+        {
+
+            CompanyID = Convert.ToInt32(_User.FindFirst("CompanyID").Value);
+            CustomerID = Convert.ToInt32(_User.FindFirst("CustomerId").Value);
+            //await LoadAllTickets();
+            _VwTicketsStatusInfoFilterData = _VwTicketsStatusInfoClosedList.OrderByDescending(x => x.RegisteredDate).ToList();
+            if (HubConnection.State == HubConnectionState.Disconnected)
+            {
+                await HubConnection.StartAsync();
+            }
+
+            HubConnection.On("DataChanged", async () =>
+            {
+                //await LoadAllTickets();
+                await _VwTicketsStatusInfoGrid.Reload();
+                StateHasChanged();
+            });
+        }
+
+    }
+    private async Task LoadAllTickets()
+    {
+        _VwTicketsStatusInfoClosedList = await _StsTicketsRegisterService.GetAllTicketsWithClosedStatus(CompanyID, CustomerID, (int)TicketStatus.Closed);
+        _VwTicketsStatusInfoFilterData = _VwTicketsStatusInfoClosedList.OrderByDescending(x => x.RegisteredDate).ToList();
+
+    }
+    private void CustomRowRender(RowRenderEventArgs<VwTicketsStatusInfo> args)
+    {
+
+    }
+    private async void SelectRowData(DataGridRowMouseEventArgs<VwTicketsStatusInfo> args)
+    {
+        if (args.Data.TicketId > 0)
+        {
+
+            (parentTicketsData.TicketsRegister, parentTicketsData.TicketsRegisterAttachment) = await _StsTicketsRegisterService.GetTicketsMasterDetailByID(args.Data.TicketId);
+            parentTicketsData.StatusColor = args.Data.StatusColor;
+            parentTicketsData.StatusName = args.Data.StatusName;
+
+            await ParentDataChanged.InvokeAsync(parentTicketsData);
+            StateHasChanged();
+        }
+    }
+
+
+
+}
+

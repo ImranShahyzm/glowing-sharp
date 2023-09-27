@@ -1,0 +1,680 @@
+﻿@page "/Tickets"
+@using Microsoft.AspNetCore.SignalR;
+@using Microsoft.AspNetCore.SignalR.Client;
+@using Microsoft.Extensions.Options;
+@using Newtonsoft.Json;
+@using SagErpBlazor.DataTransferClasses;
+@using SagErpBlazor.DbClasses;
+@using SagErpBlazor.ModelServices;
+@using SagErpBlazor.Models;
+@using Radzen;
+@using Radzen.Blazor;
+@using SagErpBlazor.Services;
+@using SagErpBlazor.SignalRHub;
+@using SagErpBlazor.StaticEnums;
+@inject ILogger<TicketsComponent> Logger
+@inject IWebHostEnvironment Environment
+@inject StsTicketsRegisterService _StsTicketsRegisterService;
+@inject IOptions<ApiSettings> _ApiSettings;
+@inject IHubContext<TicketsHub> TicketsHubContext
+@inject HubConnection HubConnection
+<div id="panel-11" class="panel">
+    <div class="panel-hdr">
+     
+        <h3 class="color-primary-600 NameForm" style="font-weight: 500; font-size: 22px; margin-top: 11px;">
+            Generate Tickets No
+        </h3>
+      
+    </div>
+    @if (FileSizeLimitMessage)
+    {
+        <div class="modal modal-alert fade show" id="example-modal-alert1" tabindex="-1" role="dialog" style="padding-right: 17px; display: block;" aria-modal="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">File Size Limit Exceeds (Max 5 MB)</h5>
+                        <button type="button" class="close" @onclick="CloseModal" aria-label="Close">
+                            <span aria-hidden="true"><i class="fal fa-times"></i></span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                       Your File Size Limit has been Exceed Please try to Upload any file not more then 5 MB.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                        <button type="button" class="btn btn-primary" @onclick="CloseModal">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    @if (_CustomErrorClass.IsError)
+    {
+        <div class="modal modal-alert fade show" id="example-modal-alert1" tabindex="-1" role="dialog" style="padding-right: 17px; display: block;" aria-modal="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@_CustomErrorClass.UserMessage</h5>
+                        <button type="button" class="close" @onclick="CloseErrorModal" aria-label="Close">
+                            <span aria-hidden="true"><i class="fal fa-times"></i></span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                       @_CustomErrorClass.ActualException
+                       <p>@_CustomErrorClass.InnerException</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseErrorModal">Cancel</button>
+                        <button type="button" class="btn btn-primary" @onclick="CloseErrorModal">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    @if (DocumentShowClick)
+    {
+
+
+        <div class="modal modal-fullscreen example-modal-fullscreen fade show" id="example-modal-alert1" tabindex="-1" role="dialog" style="padding-right: 17px; display: block;" aria-modal="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <iframe src="@ReportURL" title="Report Preview"
+                        style="height:100%;width:100%"></iframe>
+                    <div class="modal-footer">
+                       
+                        <button type="button" class="btn btn-primary" @onclick="CloseModal">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+       
+   
+    }
+    @if (@IsDeleteRecords)
+    {
+        <div class="modal modal-alert fade show" id="example-modal-alert1" tabindex="-1" role="dialog" style="padding-right: 17px; display: block;" aria-modal="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ticket Delete Information</h5>
+                        <button type="button" class="close" @onclick="CloseModal" aria-label="Close">
+                            <span aria-hidden="true"><i class="fal fa-times"></i></span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Are you Sure you Want to Delete the Selected Records?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                        <button type="button" class="btn btn-danger" @onclick="OnDeleteClicked">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="panel-container show">
+        <div class="panel-content">
+            <div class="border px-3 pt-3 pb-0 rounded">
+                <ul class="nav nav-pills" role="tablist">
+                    <li class="nav-item"><a class="nav-link @(activeTab == "NewTickets" ? "active" : "")" href="javascript:void(0);" @onclick='()=>ActivateTab("NewTickets")'><i class="fal fa-home mr-1"></i>+ New Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link  @(activeTab == "ActiveTickets" ? "active" : "")" href="javascript:void(0);" @onclick='()=>ActivateTab("ActiveTickets")'><i class="fal fa-user mr-1"></i>Active Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link  @(activeTab == "PendingTickets" ? "active" : "")" href="javascript:void(0);" @onclick='()=>ActivateTab("PendingTickets")'><i class="fal fa-user mr-1"></i>Pending Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link  @(activeTab == "ClosedTickets" ? "active" : "")" href="javascript:void(0);" @onclick='()=>ActivateTab("ClosedTickets")'><i class="fal fa-user mr-1"></i>Closed Tickets</a></li>
+
+                    <li class="nav-item"><a class="nav-link  @(activeTab == "RejectedTickets" ? "active" : "")" href="javascript:void(0);" @onclick='()=>ActivateTab("RejectedTickets")'><i class="fal fa-user mr-1"></i>Rejected Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link  @(activeTab == "AllTickets" ? "active" : "")" href="javascript:void(0);" @onclick='()=>ActivateTab("AllTickets")'><i class="fal fa-user mr-1"></i>All Tickets</a></li>
+                </ul>
+                <div class="tab-content py-3">
+                    <div class="tab-pane fade @(activeTab == "NewTickets" ? "show active" : "")" id="js_pill_border_icon-1" role="tabpanel">
+                        <input type="hidden" @bind="_StsTicketsRegister.CompanyId" />
+                        <input type="hidden" @bind="_StsTicketsRegister.RegisteredBy" />
+                        <input type="hidden" @bind="_StsTicketsRegister.RegisteredDate" />
+                        <input type="hidden" @bind="_StsTicketsRegister.ProjectName" />
+                        @if (!string.IsNullOrEmpty(parentTicketsData.StatusName) && _StsTicketsRegister.TicketId > 0)
+                        {
+                            <span class="status-tag" style="background-color:@parentTicketsData.StatusColor">@parentTicketsData.StatusName</span>
+                        }
+                        <RadzenRow Class="rz-p-0 rz-p-lg-4">
+                       <RadzenColumn Size="12" SizeMD="6">   
+                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="1rem">
+                            
+                               <RadzenStack Gap="1rem" Orientation="Radzen.Orientation.Horizontal">
+                                            <RadzenFormField Style="color:darkmagenta" Text="Ticket #" Variant="Variant.Outlined">
+                                            <RadzenNumeric  Disabled=true @bind-Value="@_StsTicketsRegister.TicketNo" />
+                                        </RadzenFormField>
+                              
+                                    <RadzenFormField Style="color:darkmagenta" Text="Ticket Type" Variant="Variant.Outlined">
+                                    <RadzenDropDown AllowClear="true" @bind-Value=@_StsTicketsRegister.TicketType AllowVirtualization="true"
+                                                    AllowFiltering="true"
+                                                    Data=@_StsTicketsTypes TextProperty="TypeName" ValueProperty="TypeId" />
+                                    </RadzenFormField>
+                              
+                                      
+                                        </RadzenStack>
+                              
+                                        
+                                        
+                            <RadzenFormField Text="Customer Name" Variant="Variant.Outlined" Style="flex: 1;">
+                                        <RadzenDropDown AllowClear="true" Change="@LoadProjectsListFiltered" @bind-Value=@_StsTicketsRegister.CustomerId AllowVirtualization="true"
+                                                AllowFiltering="true"
+                                                Data=@_StsCustomerList TextProperty="CustomerName" ValueProperty="CustomerId" />
+                            </RadzenFormField>
+
+                                    <RadzenFormField Text="Project Name" Variant="Variant.Outlined" Style="flex: 1;">
+                                        <RadzenDropDown AllowClear="true"  @bind-Value=@_StsTicketsRegister.ProjectId AllowVirtualization="true"
+                                                        AllowFiltering="true"
+                                                        Data=@_StsProjectsListFiltered TextProperty="ProjectDescription" ValueProperty="ProjectId" />
+                                    </RadzenFormField>
+                           
+                                        <RadzenFormField Text="Subject line" Variant="Variant.Outlined" Style="flex: 1;">
+                                <RadzenTextBox @bind-Value="@_StsTicketsRegister.TicketName" />
+                                        </RadzenFormField>
+
+                                    <RadzenFormField Text="Detail Description" Variant="Variant.Outlined">
+                                        <RadzenTextArea Rows="6" @bind-Value="@_StsTicketsRegister.Description" />
+                                    </RadzenFormField>
+                          
+      
+                                    </RadzenStack>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="6">
+                                
+                                <InputFile OnChange="@LoadFiles" multiple />
+                                @if (isLoading)
+                                {
+                                    <p> We are Uploading...</p>
+                                }
+                              
+                             
+                                <RadzenDataGrid @ref="_DataGridAttachments" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="true" PageSize="5" AllowSorting="false"
+                                                Data="@_StsTicketsRegisterAttachmentList" TItem="StsTicketsRegisterAttachment" Density="Density.Compact">
+                                    <Columns>
+                                      
+                                        <RadzenDataGridColumn TItem="StsTicketsRegisterAttachment" Property="AttachmentName" Title="Attached Document" Width="160px">
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn Width="160px" TItem="StsTicketsRegisterAttachment" Property="AttachDescription" Title="Description">
+                                           <Template Context="_StsTicketsRegisterAttachmentObj">
+                                            <RadzenFormField  Text="Attachment Description" Variant="Variant.Outlined">
+                                                    <RadzenTextArea Rows="1" @bind-value="_StsTicketsRegisterAttachmentObj.AttachDescription" />
+                                            </RadzenFormField>
+                                            </Template>
+        </RadzenDataGridColumn>
+                                       
+                                        <RadzenDataGridColumn TItem="StsTicketsRegisterAttachment" Context="_StsTicketsRegisterAttachmentObj" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="56px">
+                                            <Template Context="_StsTicketsRegisterAttachmentObj">
+                                                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="open_with" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => ShowDocument(_StsTicketsRegisterAttachmentObj))" @onclick:stopPropagation="true">
+                                                </RadzenButton>
+                                                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteDetailRow(_StsTicketsRegisterAttachmentObj))" @onclick:stopPropagation="true">
+                                                </RadzenButton>
+                                            </Template>
+                                         
+                                        </RadzenDataGridColumn>
+                                    </Columns>
+                                </RadzenDataGrid>
+                        </RadzenColumn>
+
+
+
+                           
+                    </RadzenRow>
+                        <div class="panel-content py-2 rounded-bottom border-faded border-left-0 border-right-0 border-bottom-0">
+                            <div class="col-md-4 ml-auto text-right">
+                          
+                                <button type="button" id="btnCancel" style="margin-right:10px;" class="btn btn-warning waves-effect waves-themed" @onclick="ClearFields"><i class="fal fa-check mr-2"></i>Cancel</button>
+                           
+                            @if (!IsSavingInProcess)
+                            {
+                                @if (_StsTicketsRegister.TicketId > 0)
+                                {
+
+                                        @if (_StsTicketsRegister.TicketStatus <= 0)
+                                        {
+                                            <button type="button" id="SubmitID2" style="margin-right:10px;" class="btn btn-primary waves-effect waves-themed" @onclick="OnSaveUpdateClicked"><i class="fal fa-check mr-2"></i>Update</button>
+
+                                            <button type="button" id="SubmitID2" style="margin-right:10px;" class="btn btn-danger waves-effect waves-themed" @onclick="DeleteConfirmPopup"><i class="fal fa-check mr-2"></i>Delete</button>
+                                        }
+
+
+                                }
+                                else
+                                {
+
+                                        <button type="button" id="SubmitID2" style="margin-right:10px;" class="btn btn-primary waves-effect waves-themed" @onclick="OnSaveUpdateClicked"><i class="fal fa-check mr-2"></i>Generate #</button>
+                                   
+                                }
+                            }
+                            else if (IsSavingInProcess)
+                            {
+                          
+                                    <button class="btn btn-danger rounded-pill" style="margin-right:10px;" type="button" disabled>
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    Generating Ticket ...
+                                </button>
+                           
+                            }
+                            </div>
+                        </div>
+                       
+                    </div>
+                    <div class="tab-pane fade  @(activeTab == "ActiveTickets" ? "show active" : "")" id="js_pill_border_icon-2" role="tabpanel">
+                        <SagErpBlazor.TicketsPages.ActiveTicketsComponent _VwTicketsStatusInfoActiveList="@_VwTicketsStatusInfo.Where(x=>
+                            ActiveTicketStatusIds.Contains(x.TicketStatusId)).ToList()">
+                     </SagErpBlazor.TicketsPages.ActiveTicketsComponent>
+                    </div>
+
+                    <div class="tab-pane fade  @(activeTab == "PendingTickets" ? "show active" : "")" id="js_pill_border_icon-2" role="tabpanel">
+                        <SagErpBlazor.TicketsPages.PendingTicketsComponent _VwTicketsStatusInfoPendingList="@_VwTicketsStatusInfo.Where(x=>
+                            PendingTicketStatusIds.Contains(x.TicketStatusId)).ToList()">
+
+                    </SagErpBlazor.TicketsPages.PendingTicketsComponent>
+                    </div>
+                    <div class="tab-pane fade  @(activeTab == "ClosedTickets" ? "show active" : "")" id="js_pill_border_icon-2" role="tabpanel">
+                        <SagErpBlazor.TicketsPages.ClosedTicketsComponent _VwTicketsStatusInfoClosedList="@_VwTicketsStatusInfo.Where(x=>x.TicketStatus==(int)TicketStatus.Closed || x.TicketStatus==(int)TicketStatus.VerifiedOrClosed).ToList()">
+
+                     </SagErpBlazor.TicketsPages.ClosedTicketsComponent>
+                    </div>
+                    <div class="tab-pane fade  @(activeTab == "RejectedTickets" ? "show active" : "")" id="js_pill_border_icon-2" role="tabpanel">
+                     <SagErpBlazor.TicketsPages.RejectedTicketsComponent _VwTicketsStatusInfoRejectedList="@_VwTicketsStatusInfo.Where(x=>x.TicketStatus==(int)TicketStatus.Rejected).ToList()"></SagErpBlazor.TicketsPages.RejectedTicketsComponent>
+                    </div>
+                    <div class="tab-pane fade  @(activeTab == "AllTickets" ? "show active" : "")" id="js_pill_border_icon-2" role="tabpanel">
+                        <SagErpBlazor.TicketsPages.AllTicketsComponent ParentDataChanged="@UpdateParentData" _VwTicketsStatusInfo="@_VwTicketsStatusInfo" _VwTicketsStatusInfoFilterData="_VwTicketsStatusInfoFilterData">
+                  </SagErpBlazor.TicketsPages.AllTicketsComponent>
+                    </div>
+
+                </div>
+            </div>
+           
+        </div>
+    </div>
+</div>
+
+@code {
+    StsTicketsRegister _StsTicketsRegister = new StsTicketsRegister();
+    private IEnumerable<StsCustomerRegisterDetail> _StsProjectsList = new List<StsCustomerRegisterDetail>();
+    private IEnumerable<StsCustomerRegisterDetail> _StsProjectsListFiltered = new List<StsCustomerRegisterDetail>();
+    private List<StsTicketsRegisterAttachment> _StsTicketsRegisterAttachmentList = new List<StsTicketsRegisterAttachment>();
+    private List<IBrowserFile> loadedFiles = new();
+    RadzenUpload upload;
+    private int _SelectedCustomerID;
+    string UserRole = "";
+    private int LoginID = 0;
+    private IEnumerable<StsCustomerRegister> _StsCustomerList = new List<StsCustomerRegister>();
+    private IEnumerable<StsTicketsType> _StsTicketsTypes = new List<StsTicketsType>();
+    private string activeTab = "NewTickets";
+    [CascadingParameter]
+    private Task<AuthenticationState> _AuthenticationStateTask { get; set; }
+    ClaimsPrincipal _User;
+    private long maxFileSize = 5252796;// In Bytes Size is given
+    private int maxAllowedFiles = 3;
+    private bool isLoading;
+    private bool FileSizeLimitMessage = false;
+    private string ReportURL = "";
+    private bool DocumentShowClick = false;
+    private bool IsSavingInProcess = false;
+
+
+    List<int> PendingTicketStatusIds = new List<int>
+                                            {
+                                                (int)TicketStatus.Assigned,
+                                                (int)TicketStatus.OnHold,
+                                                (int)TicketStatus.WaitingForCustomer,
+                                                (int)TicketStatus.Open,
+                                                (int)TicketStatus.ReOpen
+                                            };
+
+
+    List<int> ActiveTicketStatusIds = new List<int>
+                                            {
+                                                (int)TicketStatus.Deployed,
+                                                (int)TicketStatus.Resolved,
+                                                (int)TicketStatus.InProgress,
+                                                (int)TicketStatus.UnderQA
+                                            };
+
+    StsTicketsRegister _StcTicketsRegisterResult = new StsTicketsRegister();
+
+    async void OnSaveUpdateClicked()
+    {
+        IsSavingInProcess = true;
+        StateHasChanged();
+        IsSavingInProcess = await ValidateTicketsSavingProcess();
+
+    }
+    async Task  UpdateAllClientsData()
+    {
+
+        await TicketsHubContext.Clients.All.SendAsync("DataChanged");
+    }
+    async void OnDeleteClicked()
+    {
+
+        IsSavingInProcess = true;
+        int ticketIdToRemove = _StsTicketsRegister.TicketId;
+        _CustomErrorClass = await _StsTicketsRegisterService.DeleteTicketsAsync(_StsTicketsRegister,_StsTicketsRegisterAttachmentList);
+
+        if (!_CustomErrorClass.IsError)
+        {
+
+            _VwTicketsStatusInfo.RemoveAll(ticket => ticket.TicketId == ticketIdToRemove);
+            _VwTicketsStatusInfoFilterData = _VwTicketsStatusInfo.OrderByDescending(x => x.RegisteredDate).ToList();
+            await UpdateAllClientsData();
+            ClearFields();
+        }
+        else
+        {
+            IsSavingInProcess = false;
+        }
+
+        StateHasChanged();
+    }
+
+    async void ClearFields()
+    {
+        IsSavingInProcess = false;
+        IsDeleteRecords=false;
+        IsTicketName = false;
+        FileSizeLimitMessage = false;
+        DocumentShowClick = false;
+        _StsTicketsRegister = null;
+        _StsTicketsRegister = new StsTicketsRegister();
+        _StsTicketsRegisterAttachmentList.Clear();
+        loadedFiles.Clear();
+        UserRole = Convert.ToString(_User.FindFirst(ClaimTypes.Role).Value);
+        _StsTicketsRegister.CompanyId = Convert.ToInt32(_User.FindFirst("CompanyID").Value);
+        _StsTicketsRegister.RegisteredDate = DateTime.Now;
+        _StsTicketsRegister.RegisteredBy = Convert.ToInt32(_User.FindFirst("Userid").Value);
+        LoginID = Convert.ToInt32(_User.FindFirst("Userid").Value);
+
+        await _DataGridAttachments.Reload();
+        StateHasChanged();
+    }
+    private async Task UpdateAttachmentDescription(StsTicketsRegisterAttachment attachment)
+    {
+
+        var existingAttachment =  _StsTicketsRegisterAttachmentList.FirstOrDefault(a => a == attachment);
+        if (existingAttachment != null)
+        {
+            existingAttachment.AttachDescription = attachment.AttachDescription;
+        }
+    }
+    private bool IsDeleteRecords = false;
+    private bool IsTicketName = false;
+    private CustomErrorClass _CustomErrorClass = new CustomErrorClass();
+    private void DeleteConfirmPopup()
+    {
+        IsDeleteRecords = true;
+    }
+    private async Task<bool> ValidateTicketsSavingProcess()
+    {
+        bool AllValuesareValid = true;
+
+        if (string.IsNullOrEmpty(_StsTicketsRegister.TicketName))
+        {
+            IsTicketName = true;
+            AllValuesareValid = false;
+
+        }
+        if (_StsTicketsRegister.ProjectId<=0)
+        {
+            IsTicketName = true;
+            AllValuesareValid = false;
+
+        }
+
+        if (AllValuesareValid)
+
+        {
+            _StsTicketsRegister.ProjectName = _StsProjectsList.Where(x => x.ProjectId == _StsTicketsRegister.ProjectId).Select(x => x.ProjectDescription).FirstOrDefault();
+            bool isUpdateRecords = false;
+            if (_StsTicketsRegister.TicketId > 0)
+            {
+                _StsTicketsRegister.ModifiedBy=Convert.ToInt32(_User.FindFirst("Userid").Value);
+                (_CustomErrorClass, _StcTicketsRegisterResult) = await _StsTicketsRegisterService.UpdateTicketsAsync(_StsTicketsRegister, _StsTicketsRegisterAttachmentList);
+                isUpdateRecords = true;
+
+            }
+            else
+            {
+                (_CustomErrorClass, _StcTicketsRegisterResult) = await _StsTicketsRegisterService.AddNewTicketsAsync(_StsTicketsRegister,_StsTicketsRegisterAttachmentList);
+
+            }
+            if (!_CustomErrorClass.IsError)
+            {
+                await LoadAllTickets();
+                //if (!isUpdateRecords)
+                //{
+                //    _StsProjectRegistersList.Insert(0, _StsProjectNew1);
+                //    _StsProjectRegistersListFilterData = _StsProjectRegistersList;
+                //}
+                //await _StsProjectNew.Reload();
+                ClearFields();
+            }
+
+            else
+            {
+                IsSavingInProcess=false;
+
+            }
+
+        }
+        await UpdateAllClientsData();
+        StateHasChanged();
+        return await Task.FromResult(false);
+    }
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isLoading = true;
+        loadedFiles.Clear();
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            try
+            {
+                if (file.Size <= maxFileSize)
+                {
+                    loadedFiles.Add(file);
+
+                    var uniqueFileName = $"{Guid.NewGuid()}_{file.Name}";
+                    var path = Path.Combine(Environment.WebRootPath, "TicketsAttachments",
+                            uniqueFileName);
+
+                    await using FileStream fs = new(path, FileMode.Create);
+                    await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+                    var NewAttachments = new StsTicketsRegisterAttachment();
+                    string NewAttachmentsLog = JsonConvert.SerializeObject(_AttachmentToInsert);
+                    NewAttachments = JsonConvert.DeserializeObject<StsTicketsRegisterAttachment>(NewAttachmentsLog);
+                    NewAttachments.DocAttachment = Convert.ToString(uniqueFileName);
+                    NewAttachments.AttachmentType = file.ContentType;
+                    NewAttachments.AttachmentName = file.Name;
+
+                    _StsTicketsRegisterAttachmentList.Add(NewAttachments);
+                    await _DataGridAttachments.Reload();
+                    StateHasChanged();
+                }
+                else
+                {
+                    FileSizeLimitMessage=true;
+
+                    loadedFiles.Clear();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("File: {Filename} Error: {Error}",
+                    file.Name, ex.Message);
+            }
+        }
+
+        isLoading = false;
+    }
+    private void CloseModal()
+    {
+        FileSizeLimitMessage = false;
+        DocumentShowClick = false;
+
+    }
+    private void CloseErrorModal()
+    {
+        _CustomErrorClass = new CustomErrorClass();
+        FileSizeLimitMessage = false;
+        DocumentShowClick = false;
+    }
+    private void ActivateTab(string tabId)
+    {
+        activeTab = tabId;
+        StateHasChanged();
+    }
+    private int CustomerID { get; set; }
+    private int CompanyID { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        _User = (await _AuthenticationStateTask).User;
+
+        if (_User.Identity.IsAuthenticated)
+        {
+
+
+            UserRole = Convert.ToString(_User.FindFirst(ClaimTypes.Role).Value);
+            _StsTicketsRegister.CompanyId = Convert.ToInt32(_User.FindFirst("CompanyID").Value);
+            _StsTicketsRegister.RegisteredDate = DateTime.Now;
+            _StsTicketsRegister.RegisteredBy = Convert.ToInt32(_User.FindFirst("Userid").Value);
+            LoginID = Convert.ToInt32(_User.FindFirst("Userid").Value);
+            CompanyID = Convert.ToInt32(_User.FindFirst("CompanyID").Value);
+            CustomerID = Convert.ToInt32(_User.FindFirst("CustomerId").Value);
+            await LoadCustomerList();
+            await LoadTicketsType();
+            await LoadProjectsList();
+            await LoadAllTickets();
+            if (HubConnection.State == HubConnectionState.Disconnected)
+            {
+                await HubConnection.StartAsync();
+            }
+
+            HubConnection.On("DataChanged", async () =>
+            {
+                await LoadAllTickets();
+             
+                StateHasChanged();
+            });
+
+        }
+
+    }
+    private async Task LoadCustomerList()
+    {
+        _StsCustomerList = await _StsTicketsRegisterService.GettAllCustomersList(Convert.ToInt32(_User.FindFirst("CompanyID").Value), UserRole, LoginID);
+
+    }
+    private async Task LoadTicketsType()
+    {
+        _StsTicketsTypes = await _StsTicketsRegisterService.GetTicketsType();
+
+    }
+    private async Task LoadProjectsList()
+    {
+        _StsProjectsList = await _StsTicketsRegisterService.GetAllAssignedProjects(Convert.ToInt32(_User.FindFirst("CompanyID").Value));
+
+    }
+    private  void LoadProjectsListFiltered()
+    {
+        _StsProjectsListFiltered =  _StsProjectsList.Where(x=>x.CustomerId==_StsTicketsRegister.CustomerId).ToList();
+        StateHasChanged();
+
+    }
+    private RadzenDataGrid<StsTicketsRegisterAttachment> _DataGridAttachments;
+
+    private async Task ShowDocument(StsTicketsRegisterAttachment Obj)
+    {
+        ReportURL = _ApiSettings.Value.FileApiBaseUrl+Obj.DocAttachment+"?type="+Obj.AttachmentType;
+        DocumentShowClick=true;
+        StateHasChanged();
+
+    }
+    async Task DeleteDetailRow(StsTicketsRegisterAttachment Obj)
+    {
+
+        if (_StsTicketsRegisterAttachmentList.Contains(Obj))
+        {
+
+            _StsTicketsRegisterAttachmentList.Remove(Obj);
+            await _DataGridAttachments.Reload();
+
+            StateHasChanged();
+        }
+
+    }
+    StsTicketsRegisterAttachment _AttachmentToInsert=new StsTicketsRegisterAttachment();
+    StsTicketsRegisterAttachment _AttachmentToUpdate  = new StsTicketsRegisterAttachment();
+    async Task InsertRowInGrid()
+    {
+        _AttachmentToInsert = new StsTicketsRegisterAttachment();
+        await _DataGridAttachments.InsertRow(_AttachmentToInsert);
+    }
+    private async Task SaveRow()
+    {
+        var NewAttachments = new StsTicketsRegisterAttachment();
+        string NewAttachmentsLog = JsonConvert.SerializeObject(_AttachmentToInsert);
+        NewAttachments = JsonConvert.DeserializeObject<StsTicketsRegisterAttachment>(NewAttachmentsLog);
+        _StsTicketsRegisterAttachmentList.Add(NewAttachments);
+        await _DataGridAttachments.Reload();
+        StateHasChanged();
+
+    }
+    void OnAttachmentUploadProgress(UploadProgressArgs args, string name)
+    {
+
+        if (args.Progress == 100)
+        {
+            foreach (var file in args.Files)
+            {
+                //console.Log($"Uploaded: {file.Name} / {file.Size} bytes");
+            }
+        }
+    }
+
+    void OnAttachmentChange(UploadChangeEventArgs args, string name)
+    {
+        foreach (var file in args.Files)
+        {
+            _AttachmentToInsert.AttachmentType = file.GetType().Name;
+        }
+
+
+    }
+    int progress;
+    string info;
+
+    void OnProgress(UploadProgressArgs args, string name)
+    {
+        this.info = $"% '{name}' / {args.Loaded} of {args.Total} bytes.";
+        this.progress = args.Progress;
+    }
+    private ParentTicketsData parentTicketsData = new ParentTicketsData
+        {
+            TicketsRegister = new StsTicketsRegister(),
+            TicketsRegisterAttachment = new List<StsTicketsRegisterAttachment>(),
+            StatusColor = "##007bff",
+            StatusName = ""
+        };
+    private void UpdateParentData(ParentTicketsData newDataFromChild)
+    {
+        parentTicketsData = newDataFromChild;
+        _StsTicketsRegister=parentTicketsData.TicketsRegister;
+        _StsTicketsRegisterAttachmentList = parentTicketsData.TicketsRegisterAttachment;
+        parentTicketsData.StatusColor = parentTicketsData.StatusColor;
+        parentTicketsData.StatusName = parentTicketsData.StatusName;
+        LoadProjectsListFiltered();
+        _DataGridAttachments.Reload();
+        activeTab = "NewTickets";
+        StateHasChanged();
+    }
+    private List<VwTicketsStatusInfo> _VwTicketsStatusInfo = new List<VwTicketsStatusInfo>();
+    private List<VwTicketsStatusInfo> _VwTicketsStatusInfoFilterData = new List<VwTicketsStatusInfo>();
+    private async Task LoadAllTickets()
+    {
+        _VwTicketsStatusInfo = await _StsTicketsRegisterService.GetAllTickets(CompanyID, CustomerID);
+        _VwTicketsStatusInfoFilterData = _VwTicketsStatusInfo.OrderByDescending(x => x.RegisteredDate).ToList();
+
+    }
+}

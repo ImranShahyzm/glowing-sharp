@@ -1,0 +1,18 @@
+﻿
+
+<div class="row">
+    <div class="col-md-12">
+
+              
+            
+            <button type="button" id="SubmitID2" class="btn btn-primary waves-effect waves-themed" @onclick="OnClick"><i class="fal fa-check mr-2"></i>Save</button>
+               
+           
+       
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<bool> OnClick { get; set; }
+}

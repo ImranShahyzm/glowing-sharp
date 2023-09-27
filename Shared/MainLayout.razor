@@ -1,0 +1,666 @@
+﻿@using SagErpBlazor.Data;
+@using System.Text.Json;
+@using SagErpBlazor.Models;
+@using SagErpBlazor.Services;
+@inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+@inject SessionService _SessionService
+@inject CompanyService _CompanyService
+<PageTitle>Corbis Soft Blazor</PageTitle>
+
+
+
+
+
+
+    <div id="LinkDetail">
+    </div>
+    <div class="page-wrapper">
+        <div class="page-inner">
+            <!-- BEGIN Left Aside -->
+            <aside class="page-sidebar">
+                <div class="page-logo">
+                    <a href="/Home/Index" class="page-logo-link press-scale-down d-flex align-items-center position-relative" data-toggle="modal" data-target="#modal-shortcut">
+                        <img src="NewContent/img/logo3.png" alt="Corbis Soultions" aria-roledescription="logo">
+                    <span id="CorbisTitle" class="page-logo-text mr-1">@PortalHeading </span>
+                    <span id="CompanyTitle" class="position-absolute text-white pos-top pos-right mr-2 mt-n2"></span>
+                        <i class="fal fa-angle-down d-inline-block ml-1 fs-lg color-primary-300"></i>
+                    </a>
+                </div>
+                <!-- BEGIN PRIMARY NAVIGATION -->
+            @if (user is not null && user.IsInRole("Administrative"))
+            {
+                <AdminNav/>
+            }
+            else 
+            {
+                <CustomerNav/>
+            }
+
+           
+                <!-- END PRIMARY NAVIGATION -->
+                <!-- NAV FOOTER -->
+                <div class="nav-footer shadow-top">
+                    <a href="#" onclick="return false;" data-action="toggle" data-class="nav-function-minify" class="hidden-md-down">
+                        <i class="ni ni-chevron-right"></i>
+                        <i class="ni ni-chevron-right"></i>
+                    </a>
+                    <ul class="list-table m-auto nav-footer-buttons">
+                        <li>
+                            <a href="javascript:void(0);" data-toggle="tooltip" data-placement="top" title="Chat logs">
+                                <i class="fal fa-comments"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0);" data-toggle="tooltip" data-placement="top" title="Support Chat">
+                                <i class="fal fa-life-ring"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0);" data-toggle="tooltip" data-placement="top" title="Make a call">
+                                <i class="fal fa-phone"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div> <!-- END NAV FOOTER -->
+            </aside>
+          
+            <!-- END Left Aside -->
+            <div class="page-content-wrapper">
+                <!-- BEGIN Page Header -->
+                <header class="page-header" role="banner">
+                    <!-- we need this logo when user switches to nav-function-top -->
+                    <div class="page-logo">
+                        <a href="/Home/Index" class="page-logo-link press-scale-down d-flex align-items-center position-relative">
+                            <img src="NewContent/img/logo3.png" alt="#" aria-roledescription="logo">
+
+                            <div class="form-group">
+
+
+                                <input type="hidden" id="MainFiscalYear" name="MainFiscalYear" value="" />
+                                <input type="hidden" id="MainCompanyID" name="MainCompanyID" value="" />
+                                <input type="hidden" id="SelectedCompanyID" name="SelectedCompanyID" value="" />
+                                <input type="hidden" id="SelectedFiscalID" name="SelectedFiscalID" value="" />
+
+                            </div>
+                        <span id="CorbisTitle1" class="page-logo-text mr-1"> @PortalHeading </span>
+                            <span id="CompanyTitle1" class="position-absolute text-white pos-top pos-right mr-2 mt-n2"></span>
+                        </a>
+
+                    </div>
+
+                    <div class="hidden-lg-up">
+                        <a href="#" class="header-btn btn press-scale-down" data-action="toggle" data-class="mobile-nav-on">
+                            <i class="ni ni-menu"></i>
+                        </a>
+                    </div>
+
+                    <div class="ml-auto d-flex">
+                       
+                      
+                  
+                      
+                     
+                     
+                 
+                    
+                        <div>
+
+                            <a href="" title="#" class="header-icon d-flex align-items-center justify-content-center ml-2">
+
+
+                            <span class="ml-1 page-logo-text mr-1 text-truncate text-truncate-header hidden-xs-down">@LoggedUserName</span>
+                            <i class="page-logo-text ni ni-chevron-down hidden-xs-down"></i>
+                            </a>
+                           
+                        </div>
+                    <a href="/Login" @onclick="(() => Logout())" class="header-icon" id="headerLogout" title="Log out" style="cursor:pointer;">
+                        <i class="fal fa-sign-out"></i>
+                    </a>
+
+                </div>
+
+
+
+
+                </header>
+                @*@Url.Content*@
+
+                <style>
+                    .page-padding {
+                        padding-left: 0.5rem;
+                        padding-right: 0.5rem;
+                        padding-top: 0.5rem;
+                        padding-bottom: 0.0rem;
+                    }
+                </style>
+
+                <main id="js-page-content" role="main" class="page-content page-padding">
+
+
+
+                    @Body
+                </main>
+                <div class="page-content-overlay" data-action="toggle" data-class="mobile-nav-on">
+                </div> <!-- END Page Content -->
+                <!-- BEGIN Page Footer -->
+            <footer class="page-footer height-10 w-100 shadow-lg px-4  bg-danger-800" role="contentinfo">
+                <div class="d-flex align-items-center flex-1 text-muted">
+                    <span class="hidden-md-down text-white fw-700">2023 © Support System Powered  by&nbsp;<a href='https://www.Corbissoft.com/' class='text-white fw-500' title='Corbissoft.com' target='_blank'>Corbis Soft</a></span>
+                    </div>
+                    <div>
+                        <ul class="list-table m-0">
+                        <li><a href="#" class="text-white fw-700">About</a></li>
+                        <li class="pl-3"><a href="#" class="text-white fw-700">License</a></li>
+                        <li class="pl-3"><a href="#" class="text-white fw-700">Documentation</a></li>
+                         
+                        </ul>
+                    </div>
+                </footer>
+                <!-- END Page Footer -->
+                <!-- BEGIN Shortcuts -->
+                <div class="modal fade modal-backdrop-transparent" id="modal-shortcut" tabindex="-1" role="dialog" aria-labelledby="modal-shortcut" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-top modal-transparent" role="document">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <ul class="app-list w-auto h-auto p-0 text-left">
+                                    <li>
+                                        <a href="intel_introduction.html" class="app-list-item text-white border-0 m-0">
+                                            <div class="icon-stack">
+                                                <i class="base base-7 icon-stack-3x opacity-100 color-primary-500 "></i>
+                                                <i class="base base-7 icon-stack-2x opacity-100 color-primary-300 "></i>
+                                                <i class="fal fa-home icon-stack-1x opacity-100 color-white"></i>
+                                            </div>
+                                            <span class="app-list-name">
+                                                Home
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="page_inbox_general.html" class="app-list-item text-white border-0 m-0">
+                                            <div class="icon-stack">
+                                                <i class="base base-7 icon-stack-3x opacity-100 color-success-500 "></i>
+                                                <i class="base base-7 icon-stack-2x opacity-100 color-success-300 "></i>
+                                                <i class="ni ni-envelope icon-stack-1x text-white"></i>
+                                            </div>
+                                            <span class="app-list-name">
+                                                Inbox
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="intel_introduction.html" class="app-list-item text-white border-0 m-0">
+                                            <div class="icon-stack">
+                                                <i class="base base-7 icon-stack-2x opacity-100 color-primary-300 "></i>
+                                                <i class="fal fa-plus icon-stack-1x opacity-100 color-white"></i>
+                                            </div>
+                                            <span class="app-list-name">
+                                                Add More
+                                            </span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END Shortcuts -->
+                <!-- BEGIN Color profile -->
+                <!-- this area is hidden and will not be seen on screens or screen readers -->
+                <!-- we use this only for CSS color refernce for JS stuff -->
+                <p id="js-color-profile" class="d-none">
+                    <span class="color-primary-50"></span>
+                    <span class="color-primary-100"></span>
+                    <span class="color-primary-200"></span>
+                    <span class="color-primary-300"></span>
+                    <span class="color-primary-400"></span>
+                    <span class="color-primary-500"></span>
+                    <span class="color-primary-600"></span>
+                    <span class="color-primary-700"></span>
+                    <span class="color-primary-800"></span>
+                    <span class="color-primary-900"></span>
+                    <span class="color-info-50"></span>
+                    <span class="color-info-100"></span>
+                    <span class="color-info-200"></span>
+                    <span class="color-info-300"></span>
+                    <span class="color-info-400"></span>
+                    <span class="color-info-500"></span>
+                    <span class="color-info-600"></span>
+                    <span class="color-info-700"></span>
+                    <span class="color-info-800"></span>
+                    <span class="color-info-900"></span>
+                    <span class="color-danger-50"></span>
+                    <span class="color-danger-100"></span>
+                    <span class="color-danger-200"></span>
+                    <span class="color-danger-300"></span>
+                    <span class="color-danger-400"></span>
+                    <span class="color-danger-500"></span>
+                    <span class="color-danger-600"></span>
+                    <span class="color-danger-700"></span>
+                    <span class="color-danger-800"></span>
+                    <span class="color-danger-900"></span>
+                    <span class="color-warning-50"></span>
+                    <span class="color-warning-100"></span>
+                    <span class="color-warning-200"></span>
+                    <span class="color-warning-300"></span>
+                    <span class="color-warning-400"></span>
+                    <span class="color-warning-500"></span>
+                    <span class="color-warning-600"></span>
+                    <span class="color-warning-700"></span>
+                    <span class="color-warning-800"></span>
+                    <span class="color-warning-900"></span>
+                    <span class="color-success-50"></span>
+                    <span class="color-success-100"></span>
+                    <span class="color-success-200"></span>
+                    <span class="color-success-300"></span>
+                    <span class="color-success-400"></span>
+                    <span class="color-success-500"></span>
+                    <span class="color-success-600"></span>
+                    <span class="color-success-700"></span>
+                    <span class="color-success-800"></span>
+                    <span class="color-success-900"></span>
+                    <span class="color-fusion-50"></span>
+                    <span class="color-fusion-100"></span>
+                    <span class="color-fusion-200"></span>
+                    <span class="color-fusion-300"></span>
+                    <span class="color-fusion-400"></span>
+                    <span class="color-fusion-500"></span>
+                    <span class="color-fusion-600"></span>
+                    <span class="color-fusion-700"></span>
+                    <span class="color-fusion-800"></span>
+                    <span class="color-fusion-900"></span>
+                </p>
+                <!-- END Color profile -->
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <nav class="shortcut-menu d-none d-sm-block">
+        <input type="checkbox" class="menu-open" name="menu-open" id="menu_open" />
+        <label for="menu_open" class="menu-open-button ">
+            <span class="app-shortcut-icon d-block"></span>
+        </label>
+        <a href="#" class="menu-item btn" data-toggle="tooltip" data-placement="left" title="Scroll Top">
+            <i class="fal fa-arrow-up"></i>
+        </a>
+
+        <a href="\home\Logout" class="menu-item btn" data-toggle="tooltip" data-placement="left" title="Logout">
+            <i class="fal fa-sign-out"></i>
+        </a>
+        <a href="#" class="menu-item btn" data-action="app-reset" data-toggle="tooltip" data-placement="left" title="Full Screen">
+            <i class="fal fa-expand"></i>
+        </a>
+        <a href="#" class="menu-item btn" data-action="app-print" data-toggle="tooltip" data-placement="left" title="Print page">
+            <i class="fal fa-print"></i>
+        </a>
+        <a href="#" class="menu-item btn" data-action="app-voice" data-toggle="tooltip" data-placement="left" title="Voice command">
+            <i class="fal fa-microphone"></i>
+        </a>
+    </nav>
+    <input type="text" hidden class="form-control" id="toUser" value="" placeholder="abx@gmail.com" />
+
+
+
+    <div class="modal fade js-modal-Notification modal-backdrop-transparent" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-right">
+            <div class="modal-content h-50">
+
+                <div class="modal-body p-0 h-100 d-flex">
+
+
+
+
+                    <div class="tab-pane" id="tab-messages" role="tabpanel">
+                        <div class="custom-scroll h-100">
+                            <ul id="notificationList" class="notification"></ul>
+                        </div>
+                    </div>
+
+
+
+                </div>
+                <div class="py-2 px-3 bg-faded d-block rounded-bottom text-right border-faded border-bottom-0 border-right-0 border-left-0">
+                    <a href="#" class="fs-xs fw-500 ml-auto">view all notifications</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END Messenger -->
+    <!-- BEGIN Page Settings -->
+    <div class="modal fade js-modal-settings modal-backdrop-transparent" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-right modal-md">
+            <div class="modal-content">
+                <div class="dropdown-header bg-trans-gradient d-flex justify-content-center align-items-center w-100">
+                    <h4 class="m-0 text-center color-white">
+                        Layout Settings
+                        <small class="mb-0 opacity-80">User Interface Settings</small>
+                    </h4>
+                    <button type="button" class="close text-white position-absolute pos-top pos-right p-2 m-1 mr-2" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true"><i class="fal fa-times"></i></span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="settings-panel">
+
+                        <div class="mt-4 d-table w-100 px-5">
+                            <div class="d-table-cell align-middle">
+                                <h5 class="p-0">
+                                    App Layout
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="list" id="fh">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="header-function-fixed"></a>
+                            <span class="onoffswitch-title">Fixed Header</span>
+                            <span class="onoffswitch-title-desc">header is in a fixed at all times</span>
+                        </div>
+                        <div class="list" id="nff">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="nav-function-fixed"></a>
+                            <span class="onoffswitch-title">Fixed Navigation</span>
+                            <span class="onoffswitch-title-desc">left panel is fixed</span>
+                        </div>
+                        <div class="list" id="nfm">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="nav-function-minify"></a>
+                            <span class="onoffswitch-title">Minify Navigation</span>
+                            <span class="onoffswitch-title-desc">Skew nav to maximize space</span>
+                        </div>
+                        <div class="list" id="nfh">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="nav-function-hidden"></a>
+                            <span class="onoffswitch-title">Hide Navigation</span>
+                            <span class="onoffswitch-title-desc">roll mouse on edge to reveal</span>
+                        </div>
+                        <div class="list" id="nft">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="nav-function-top"></a>
+                            <span class="onoffswitch-title">Top Navigation</span>
+                            <span class="onoffswitch-title-desc">Relocate left pane to top</span>
+                        </div>
+                        <div class="list" id="mmb">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-main-boxed"></a>
+                            <span class="onoffswitch-title">Boxed Layout</span>
+                            <span class="onoffswitch-title-desc">Encapsulates to a container</span>
+                        </div>
+                        <div class="expanded">
+                            <ul class="">
+                                <li>
+                                    <div class="bg-fusion-50" data-action="toggle" data-class="mod-bg-1"></div>
+                                </li>
+                                <li>
+                                    <div class="bg-warning-200" data-action="toggle" data-class="mod-bg-2"></div>
+                                </li>
+                                <li>
+                                    <div class="bg-primary-200" data-action="toggle" data-class="mod-bg-3"></div>
+                                </li>
+                                <li>
+                                    <div class="bg-success-300" data-action="toggle" data-class="mod-bg-4"></div>
+                                </li>
+                            </ul>
+                            <div class="list" id="mbgf">
+                                <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-fixed-bg"></a>
+                                <span class="onoffswitch-title">Fixed Background</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 d-table w-100 px-5">
+                            <div class="d-table-cell align-middle">
+                                <h5 class="p-0">
+                                    Mobile Menu
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="list" id="nmp">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="nav-mobile-push"></a>
+                            <span class="onoffswitch-title">Push Content</span>
+                            <span class="onoffswitch-title-desc">Content pushed on menu reveal</span>
+                        </div>
+                        <div class="list" id="nmno">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="nav-mobile-no-overlay"></a>
+                            <span class="onoffswitch-title">No Overlay</span>
+                            <span class="onoffswitch-title-desc">Removes mesh on menu reveal</span>
+                        </div>
+                        <div class="list" id="sldo">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="nav-mobile-slide-out"></a>
+                            <span class="onoffswitch-title">Off-Canvas <sup>(beta)</sup></span>
+                            <span class="onoffswitch-title-desc">Content overlaps menu</span>
+                        </div>
+                        <div class="mt-4 d-table w-100 px-5">
+                            <div class="d-table-cell align-middle">
+                                <h5 class="p-0">
+                                    Accessibility
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="list" id="mbf">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-bigger-font"></a>
+                            <span class="onoffswitch-title">Bigger Content Font</span>
+                            <span class="onoffswitch-title-desc">content fonts are bigger for readability</span>
+                        </div>
+                        <div class="list" id="mhc">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-high-contrast"></a>
+                            <span class="onoffswitch-title">High Contrast Text (WCAG 2 AA)</span>
+                            <span class="onoffswitch-title-desc">4.5:1 text contrast ratio</span>
+                        </div>
+                        <div class="list" id="mcb">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-color-blind"></a>
+                            <span class="onoffswitch-title">Daltonism <sup>(beta)</sup> </span>
+                            <span class="onoffswitch-title-desc">color vision deficiency</span>
+                        </div>
+                        <div class="list" id="mpc">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-pace-custom"></a>
+                            <span class="onoffswitch-title">Preloader Inside</span>
+                            <span class="onoffswitch-title-desc">preloader will be inside content</span>
+                        </div>
+                        <div class="mt-4 d-table w-100 px-5">
+                            <div class="d-table-cell align-middle">
+                                <h5 class="p-0">
+                                    Global Modifications
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="list" id="mcbg">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-clean-page-bg"></a>
+                            <span class="onoffswitch-title">Clean Page Background</span>
+                            <span class="onoffswitch-title-desc">adds more whitespace</span>
+                        </div>
+                        <div class="list" id="mhni">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-hide-nav-icons"></a>
+                            <span class="onoffswitch-title">Hide Navigation Icons</span>
+                            <span class="onoffswitch-title-desc">invisible navigation icons</span>
+                        </div>
+                        <div class="list" id="dan">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-disable-animation"></a>
+                            <span class="onoffswitch-title">Disable CSS Animation</span>
+                            <span class="onoffswitch-title-desc">Disables CSS based animations</span>
+                        </div>
+                        <div class="list" id="mhic">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-hide-info-card"></a>
+                            <span class="onoffswitch-title">Hide Info Card</span>
+                            <span class="onoffswitch-title-desc">Hides info card from left panel</span>
+                        </div>
+                        <div class="list" id="mlph">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-lean-subheader"></a>
+                            <span class="onoffswitch-title">Lean Subheader</span>
+                            <span class="onoffswitch-title-desc">distinguished page header</span>
+                        </div>
+                        <div class="list" id="mnl">
+                            <a href="#" onclick="return false;" class="btn btn-switch" data-action="toggle" data-class="mod-nav-link"></a>
+                            <span class="onoffswitch-title">Hierarchical Navigation</span>
+                            <span class="onoffswitch-title-desc">Clear breakdown of nav links</span>
+                        </div>
+                        <div class="list mt-1">
+                            <span class="onoffswitch-title">Global Font Size <small>(RESETS ON REFRESH)</small> </span>
+                            <div class="btn-group btn-group-sm btn-group-toggle my-2" data-toggle="buttons">
+                                <label class="btn btn-default btn-sm" data-action="toggle-swap" data-class="root-text-sm" data-target="html">
+                                    <input type="radio" name="changeFrontSize"> SM
+                                </label>
+                                <label class="btn btn-default btn-sm" data-action="toggle-swap" data-class="root-text" data-target="html">
+                                    <input type="radio" name="changeFrontSize" checked=""> MD
+                                </label>
+                                <label class="btn btn-default btn-sm" data-action="toggle-swap" data-class="root-text-lg" data-target="html">
+                                    <input type="radio" name="changeFrontSize"> LG
+                                </label>
+                                <label class="btn btn-default btn-sm" data-action="toggle-swap" data-class="root-text-xl" data-target="html">
+                                    <input type="radio" name="changeFrontSize"> XL
+                                </label>
+                            </div>
+                            <span class="onoffswitch-title-desc d-block mb-0">
+                                Change <strong>root</strong> font size to effect rem
+                                values
+                            </span>
+                        </div>
+                        <hr class="mb-0 mt-4">
+                        <div class="mt-2 d-table w-100 pl-5 pr-3">
+                            <div class="fs-xs text-muted p-2 alert alert-warning mt-3 mb-2">
+                                <i class="fal fa-exclamation-triangle text-warning mr-2"></i>The settings below uses localStorage to load
+                                the external CSS file as an overlap to the base css. Due to network latency and CPU utilization, you may
+                                experience a brief flickering effect on page load which may show the intial applied theme for a split
+                                second. Setting the prefered style/theme in the header will prevent this from happening.
+                            </div>
+                        </div>
+                        <div class="mt-2 d-table w-100 pl-5 pr-3">
+                            <div class="d-table-cell align-middle">
+                                <h5 class="p-0">
+                                    Theme colors
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="expanded theme-colors pl-5 pr-3">
+                            <ul class="m-0">
+                                <li>
+                                    <a href="#" id="myapp-0" data-action="theme-update" data-themesave data-theme="" data-toggle="tooltip" data-placement="top" title="Wisteria (base css)" data-original-title="Wisteria (base css)"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-1" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-1.css" data-toggle="tooltip" data-placement="top" title="Tapestry" data-original-title="Tapestry"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-2" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-2.css" data-toggle="tooltip" data-placement="top" title="Atlantis" data-original-title="Atlantis"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-3" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-3.css" data-toggle="tooltip" data-placement="top" title="Indigo" data-original-title="Indigo"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-4" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-4.css" data-toggle="tooltip" data-placement="top" title="Dodger Blue" data-original-title="Dodger Blue"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-5" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-5.css" data-toggle="tooltip" data-placement="top" title="Tradewind" data-original-title="Tradewind"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-6" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-6.css" data-toggle="tooltip" data-placement="top" title="Cranberry" data-original-title="Cranberry"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-7" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-7.css" data-toggle="tooltip" data-placement="top" title="Oslo Gray" data-original-title="Oslo Gray"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-8" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-8.css" data-toggle="tooltip" data-placement="top" title="Chetwode Blue" data-original-title="Chetwode Blue"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-9" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-9.css" data-toggle="tooltip" data-placement="top" title="Apricot" data-original-title="Apricot"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-10" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-10.css" data-toggle="tooltip" data-placement="top" title="Blue Smoke" data-original-title="Blue Smoke"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-11" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-11.css" data-toggle="tooltip" data-placement="top" title="Green Smoke" data-original-title="Green Smoke"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-12" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-12.css" data-toggle="tooltip" data-placement="top" title="Wild Blue Yonder" data-original-title="Wild Blue Yonder"></a>
+                                </li>
+                                <li>
+                                    <a href="#" id="myapp-13" data-action="theme-update" data-themesave data-theme="/NewContent/css/themes/cust-theme-13.css" data-toggle="tooltip" data-placement="top" title="Emerald" data-original-title="Emerald"></a>
+                                </li>
+                            </ul>
+                        </div>
+                        <hr class="mb-0 mt-4">
+                        <div class="pl-5 pr-3 py-3 bg-faded">
+                            <div class="row no-gutters">
+                                <div class="col-6 pr-1">
+                                    <a href="#" class="btn btn-outline-danger fw-500 btn-block" data-action="app-reset">Reset Settings</a>
+                                </div>
+                                <div class="col-6 pl-1">
+                                    <a href="#" class="btn btn-danger fw-500 btn-block" data-action="factory-reset">Factory Reset</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div> <span id="saving"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@inject NavigationManager NavigationManager
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    ClaimsPrincipal user;
+    StsGlcompany _CompanyData;
+
+    bool IsUserAuthenticated;
+    bool IsPublisher;
+    bool IsSeniorEmployee;
+    string PortalHeading;
+    string LoggedUserName;
+    public int Count { get; set; } = 400;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = (await authenticationStateTask).User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            IsUserAuthenticated = true;
+            if (user.IsInRole("Administrative"))
+            {
+                _CompanyData = await _CompanyService.GetCompanyData(Convert.ToInt32(user.FindFirst("CompanyID").Value));
+                PortalHeading = _CompanyData.Title;
+                LoggedUserName = user.Identity.Name;
+            }
+            else if (user.IsInRole("Client"))
+            {
+                
+                PortalHeading = Convert.ToString(user.FindFirst("CustomerName").Value);
+                LoggedUserName  = Convert.ToString(user.FindFirst("FirstName").Value); 
+            }
+            else if (user.IsInRole("Support Engineer"))
+            {
+
+                PortalHeading ="Corbis Soft Support Engineer Portal";
+                LoggedUserName = Convert.ToString(user.FindFirst("FirstName").Value);
+            }
+            else if (user.IsInRole("Technical Engineer"))
+            {
+
+                PortalHeading = "Corbis Soft Technical Engineer Portal";
+                LoggedUserName = Convert.ToString(user.FindFirst("FirstName").Value);
+            }
+            await JSRuntime.InvokeVoidAsync("addClassToBody", "nav-function-top");
+           
+        }
+
+        else
+        {
+            navigationManager.NavigateTo("/");
+        }
+    }
+
+    public async Task Logout()
+    {
+        await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsLoggedOut();
+        NavigationManager.NavigateTo("/");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+

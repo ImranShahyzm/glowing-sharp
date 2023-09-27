@@ -1,0 +1,43 @@
+﻿@page "/counter"
+@using System.Security.Claims
+@using Blazored.LocalStorage
+@inject ILocalStorageService localStorageService
+@inject IAuthorizationService authorizationService
+
+<PageTitle>Counter</PageTitle>
+
+@if (IsUserAuthenticated)
+{
+    <h3><b>@user.Identity.Name</b> is logged in!!!</h3>
+    <br />
+    <p>Is Publisher : @IsPublisher</p>
+    <p>Is Senior Employee : @IsSeniorEmployee</p>
+}
+else
+{
+    <h3><b>User is logged out</b></h3>
+}
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    ClaimsPrincipal user;
+
+    bool IsUserAuthenticated;
+    bool IsPublisher;
+    bool IsSeniorEmployee;
+
+    public int Count { get; set; } = 400;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = (await authenticationStateTask).User;
+
+        if (user.Identity.IsAuthenticated)
+            IsUserAuthenticated = true;
+
+        else
+        {
+            navigationManager.NavigateTo("/");
+        }
+    }
+}

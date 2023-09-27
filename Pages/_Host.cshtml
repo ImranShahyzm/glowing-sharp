@@ -1,0 +1,116 @@
+﻿@page "/"
+@namespace SagErpBlazor.Pages
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "_Layout";
+}
+
+@(await Html.RenderComponentAsync<App>(RenderMode.Server))
+<script>
+    function addClassToBody(className) {
+        document.body.classList.add(className);
+    }
+    window.methods = {
+
+        CreateCookie: function (name, value, days) {
+
+            var expires;
+
+            if (days) {
+
+                var date = new Date();
+
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+
+                expires = "; expires=" + date.toGMTString();
+
+            }
+
+            else {
+
+                expires = "";
+
+            }
+
+            document.cookie = name + "=" + value + expires + "; path=/";
+
+        },
+
+        GetCookie: function (cname) {
+
+            let name = cname + "=";
+
+            let decodedCookie = decodeURIComponent(document.cookie);
+
+            let ca = decodedCookie.split(';');
+
+            for (let i = 0; i < ca.length; i++) {
+
+                let c = ca[i];
+
+                while (c.charAt(0) == ' ') {
+
+                    c = c.substring(1);
+
+                }
+
+                if (c.indexOf(name) == 0) {
+
+                    return c.substring(name.length, c.length);
+
+                }
+
+            }
+
+            return "";
+
+        }
+
+    }
+    window.blazorExtensions = {
+        setCookie: function (name, value) {
+            document.cookie = name + "=" + value + "; path=/";
+        }
+    };
+    window.localStorageInterop = {
+        getItem: (key) => {
+            return localStorage.getItem(key);
+        },
+        setItem: (key, value) => {
+            localStorage.setItem(key, value);
+        },
+        removeItem: (key) => {
+            localStorage.removeItem(key);
+        }
+    };
+    function initDataTable() {
+       $('#dt-basic-example').dataTable();
+       
+    }
+    function rgb2hex(rgb) {
+        if (!rgb) {
+            return null; // Handle the case where rgb is undefined or not provided
+        }
+
+        const regex = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*\d+\.\d+)?\)/i;
+        const matches = rgb.match(regex);
+
+        if (matches && matches.length === 4) {
+            const hex = "#" + matches.slice(1).map(c => parseInt(c).toString(16).padStart(2, "0")).join("");
+            return hex;
+        }
+
+        return null; // Return null in case of invalid input
+    }
+
+    function debounce(func, delay) {
+        let timeoutId;
+        return function (...args) {
+            const context = this;
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func.apply(context, args), delay);
+        };
+    }
+
+</script>
