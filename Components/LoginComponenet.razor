@@ -1,0 +1,355 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Authentication.Cookies;
+@using Microsoft.AspNetCore.Authentication;
+@using SagErpBlazor.Data
+@using System.Data.SqlClient;
+@using System.Data;
+@using System.Security.Claims;
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
+@using SagErpBlazor.Services;
+@inject SessionService _SessionService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject DataBaseServices DataBaseService
+
+@inject Blazored.LocalStorage.ILocalStorageService localStorageService
+@inject IUserService userService
+
+@attribute [AllowAnonymous]
+@layout EmptyLayout
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+
+
+    @if (IsModalVisible)
+    {
+        <div class="modal modal-alert fade show" id="example-modal-alert1" tabindex="-1" role="dialog" style="padding-right: 17px; display: block;" aria-modal="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Users Data Verification</h5>
+                        <button type="button" class="close" @onclick="CloseModal" aria-label="Close">
+                            <span aria-hidden="true"><i class="fal fa-times"></i></span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        @ModalBodyText
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                        <button type="button" class="btn btn-primary" @onclick="CloseModal">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="page-wrapper" id="dynamicBackground">
+        <div class="page-inner">
+            <div class="page-content-wrapper" style="background-repeat: no-repeat; background-size: cover;background-position: center center; background-image:url('@SysLoginBackground')">
+                <div class="height-10 w-100 shadow-lg px-4  bg-danger-800">
+                    <div class="d-flex align-items-center container p-0">
+                        <div>
+                            <a href="#" class="page-logo-link press-scale-down d-flex align-items-center">
+                                <img src="Content/assets/images/Corbis.png" alt="Corbis" aria-roledescription="logo" width="60" height="50" style="margin-top:10px;border-radius: 10%">
+                                <span class="page-logo-text mr-1">Corbis Soft</span>
+                            </a>
+                        </div>
+                        @*<a href="/data_UserRegistration/Create" class="btn-link text-white ml-auto">
+                    Create Account
+                </a>*@
+                        @*<a href="https://corbissoft.com/" class="btn-link text-white ml-auto">
+                   Visit Our Site
+                </a>*@
+                    </div>
+
+                </div>
+                <main id="js-page-content" role="main" class="page-content page-padding">
+
+                 
+                      
+                        <input type="hidden" @bind="ClientID"/>
+                        <input type="hidden" @bind="SysLoginBackground" />
+                        <input type="hidden" @bind="CssStyleColor" />
+
+                      
+                        <input type="hidden" id="CompanyName" name="CompanyName" value="" />
+                        <input type="hidden" id="FiscalYearName" name="FiscalYearName" value="" />
+
+                        <div class="flex-1">
+                            <div class="container py-4 py-lg-5 my-lg-5 px-4 px-sm-0">
+                                <div class="row">
+                                    <div class="col col-md-6 col-lg-7  hidden-sm-down">
+                                        <h2 class="fs-xxl fw-500 mt-4" style="color:@CssStyleColor">
+                                            Corbis Soft
+                                            <small class="h3 fw-600 mt-4 mb-5  opacity-800" style="color:@CssStyleColor">
+                                                <p>1101, 11th Floor, Al-Hafeez Heights, Gullberg III, Lahore</p>
+                                                <p>42 Upper Ground Floor Trust Plaza Near PTCL Exchange,Dera Adda Multan</p>
+                                                <p>Pakistan. Tel: 061-2080200 .</p>
+                                                <p>4116 Bunkar Hill Drive S, Coopersburg pa.18036.</p>
+                                                <p>USA.Contact No. +1 610 203 1353</p>
+                                              
+                                            </small>
+                                        </h2>
+                                        <div class="d-sm-flex flex-column align-items-center justify-content-center d-md-block" style="color:@CssStyleColor">
+                                            <div class="px-0 py-1 mt-5  fs-nano opacity-50" style="color:@CssStyleColor">
+                                                Find us on social media
+                                            </div>
+                                            <div class="d-flex flex-row opacity-70">
+                                                <a href="#" class="mr-2 fs-xxl" style="color:@CssStyleColor">
+                                                    <i class="fa fa-facebook-square"></i>
+                                                </a>
+                                                <a href="#" class="mr-2 fs-xxl" style="color:@CssStyleColor">
+                                                    <i class="fa fa-twitter-square"></i>
+                                                </a>
+                                                <a href="#" class="mr-2 fs-xxl" style="color:@CssStyleColor">
+                                                    <i class="fa fa-google-plus-square"></i>
+                                                </a>
+                                                <a href="#" class="mr-2 fs-xxl" style="color:@CssStyleColor">
+                                                    <i class="fa fa-linkedin"></i>
+                                                </a>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                <div class="col-sm-12 col-md-6 col-lg-5 col-xl-4 ml-auto">
+                                        <h1 class="text-white fw-300 mb-3 d-sm-block d-md-none">
+                                            Secure login
+                                        </h1>
+                                    <div class="card p-4 rounded-plus bg-faded text-wrapper">
+                                            <form action="#" method="post">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="username">User Name</label>
+                                                <input type="text" placeholder="User Name" autofocus class="form-control input-lg" @bind="@Username" />
+
+                                                    <div class="help-block">Your unique username to app</div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label" for="password">Password</label>
+                                                <input type="password" placeholder="User Password" autofocus class="form-control input-lg" @bind="@Password" />
+
+                                                    <div class="help-block">Your password</div>
+                                                </div>
+                                               
+                                            
+                                                <div>
+                                                    <center><button type="button" @onclick="ValidateUser" class="btn btn-danger bg-danger-800 btn-block btn-lg ">Secure login</button></center>
+                                                </div>
+                                                <br />
+                                            <div class="move-text">
+                <span class="text_overflow" style="color:red;font-weight:bold;">@ExpiryMessage</span>
+            </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    
+                </main>
+                <footer class="page-footer height-10 w-100 shadow-lg px-4  bg-danger-800" role="contentinfo">
+                    <div class="d-flex align-items-center flex-1 text-muted">
+                        <span class="hidden-md-down text-white fw-700">2023 © ERP Software  by&nbsp;<a href='https://www.Corbissoft.com/' class='text-white fw-500' title='Corbissoft.com' target='_blank'>Corbis Soft</a></span>
+                    </div>
+                    <div>
+                        <ul class="list-table m-0">
+                            <li><a href="#" class="text-white fw-700">About</a></li>
+                            <li class="pl-3"><a href="#" class="text-white fw-700">License</a></li>
+                            <li class="pl-3"><a href="#" class="text-white fw-700">Documentation</a></li>
+                        </ul>
+                    </div>
+                </footer>
+            </div>
+        </div>
+
+    </div>
+   
+
+
+
+@code {
+    private GLUser user;
+    public string LoginMesssage { get; set; }
+    ClaimsPrincipal claimsPrincipal;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+
+  
+
+    private void CloseModal()
+    {
+        IsModalVisible = false;
+        // InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    { 
+        InitializePage();
+        // SignInClick();
+    }
+
+    private void InitializePage()
+    {
+
+
+        var ConfigDt = DataBaseService.GetConfigurationData();
+
+
+        var ExpieryKey = Convert.ToString(ConfigDt.Rows[0]["SysColumnDt"].ToString());
+        var _SysLoginBackground = Convert.ToString(ConfigDt.Rows[0]["SysLoginBackground"].ToString());
+        var _ClientID = ConfigDt.Rows[0]["ClientID"] is DBNull ? 0
+                                    : Convert.ToInt32(ConfigDt.Rows[0]["ClientID"]);
+        SysLoginBackground = _SysLoginBackground;
+
+        var _CssStyleColor = Convert.ToString(ConfigDt.Rows[0]["CssStyleColor"].ToString());
+
+        if (string.IsNullOrEmpty(_CssStyleColor))
+        {
+            CssStyleColor = "#FAF9F6";
+        }
+        else
+        {
+            CssStyleColor = _CssStyleColor;
+        }
+        if (string.IsNullOrEmpty(SysLoginBackground))
+        {
+            SysLoginBackground = "/Content/CorbisDefault.png";
+            CssStyleColor = "#4B0082";
+        }
+        ClientID = _ClientID;
+
+
+        var DecryptExpiryDate = EncryptionHelper.DefaultDecrypt(ExpieryKey, EncryptionHelper.DefaultKey);
+
+
+        if (DecryptExpiryDate != "No" && !string.IsNullOrEmpty(DecryptExpiryDate))
+        {
+
+            var CurrentDate = System.DateTime.Now;
+            var ExpiryDate = Convert.ToDateTime(DecryptExpiryDate);
+            var Days = (ExpiryDate.Date - CurrentDate.Date).TotalDays;
+            if (Days <= 0)
+            {
+                ExpiryMessage = "آپ کے سوفٹویئر کی میعاد  ختم ہو گی دوبارہ فعال ہونے کے لئے برائے کرم سافٹ ویئر کے واجبات ادا کریں  یا کوربس سافٹ سے رابطہ کریں۔";
+
+                ExpiryMessage += "Your Software License has been expired due to an outstanding balance on your account, which needs to be resolved to continue enjoying uninterrupted access to our software.(Please Contact with Corbis Soft for further assistance)";
+
+
+
+            }
+            else if (Days <= 10)
+            {
+                ExpiryMessage = " Your Software License is going to expire in " + Convert.ToString(Days) + " Days, due to an outstanding balance on your account, which needs to be resolved to continue enjoying uninterrupted access to our software.(Please Contact with Corbis Soft for further assistance) ";
+                ExpiryMessage += "آپ کے سوفٹویئر کی میعاد " + Convert.ToString(Days) + " دن میں ختم ہوجائے گی دوبارہ فعال ہونے کے لئے برائے کرم سافٹ ویئر کے واجبات ادا کریں  یا کوربس سافٹ سے رابطہ کریں۔";
+
+
+
+            }
+
+
+        }
+        else
+        {
+            ExpiryMessage = "";
+        }
+    }
+
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        user = new GLUser();
+
+        claimsPrincipal = (await authenticationStateTask).User;
+
+        if (claimsPrincipal.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/index");
+        }
+        
+
+    }
+
+
+    private async Task<bool> ValidateUser()
+    {
+        if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
+        {
+            ModalBodyText = "Please Enter Your Correct Username, Password to Proceed further..";
+            IsModalVisible = true;
+            StateHasChanged();
+            return false;
+        }
+        else
+        {
+            user.UserPassword = Password;
+            user.Username = Username;
+
+        }
+        var returnedUser = await userService.LoginAsync(user);
+
+        if (!string.IsNullOrEmpty(returnedUser.AccessToken))
+        {
+            await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(returnedUser);
+            NavigationManager.NavigateTo("/Index");
+        }
+        else
+        {
+            ModalBodyText = "Please Enter Your Correct Username, Password to Proceed further..";
+                 IsModalVisible = true;
+                StateHasChanged();
+        }
+
+        return await Task.FromResult(true);
+    }
+
+
+    public string ModalBodyText { get; set; } = "Please Enter Your Correct Username, Password to Proceed further..";
+    public bool IsModalVisible { get; set; } = false;
+    public string? CompanyName { get; set; }
+    public string? ItenName { get; set; }
+
+    public string? FiscalYearName { get; set; }
+    public string? Username { get; set; }
+    public string? Password { get; set; }
+    public int Companyid { get; set; }
+    public string? WHIDs { get; set; }
+    public int FiscalID { get; set; }
+    public Int32 UserID { get; set; }
+    public bool type { get; set; }
+
+    public DateTime PublishDate { get; set; }
+    public DateTime Todate { get; set; }
+    public DateTime Fromdate { get; set; }
+    public int Stock { get; set; }
+    public string ? VendorsName { get; set; }
+    public bool isDashBoardActivate { get; set; }
+    public int CompanyCode { get; set; }
+    public int isMobileShopMenu { get; set; }
+
+
+    public int? MainCompanyID { get; set; }
+
+    public bool IsApplication { get; set; }
+    public bool UrduSoft { get; set; }
+    public bool FeedDashboard { get; set; }
+
+    public bool IsPosAttached { get; set; }
+
+
+    public int ClientID { get; set; }
+  
+    private List<dynamic> UserRightsData { get; set; } = new List<dynamic>();
+
+    public string? CssStyleColor { get; set; }
+
+    public string? ExpiryMessage { get; set; }
+    public string? SysLoginBackground { get; set; }
+
+
+}
